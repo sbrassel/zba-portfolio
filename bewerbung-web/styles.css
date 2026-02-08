@@ -1,0 +1,359 @@
+/* Bewerbungs-Webseite – exakt wie das PDF */
+
+:root {
+  --color-primary: #0F172A;
+  --color-text: #1E293B;
+  --color-muted: #64748B;
+  --color-border: #E2E8F0;
+  --color-bg: #F8FAFC;
+  --font-heading: 'DM Sans', system-ui, sans-serif;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-size: 15px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: #fff;
+  line-height: 1.45;
+}
+
+.page-wrap {
+  max-width: 210mm;
+  margin: 0 auto;
+  background: #fff;
+}
+
+.mono { font-family: var(--font-mono); font-size: 0.9em; }
+
+/* ===== HEADER (wie PDF Seite 1 oben) ===== */
+.hero {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 24px 32px;
+  text-align: center;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.hero-name-block {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin-bottom: 4px;
+}
+
+.hero-job-spaced {
+  font-size: 0.95rem;
+  letter-spacing: 0.2em;
+  font-weight: 500;
+  margin: 0 0 16px;
+  opacity: 0.95;
+}
+
+.hero-contact {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* ===== SEITE 1: CV 2-Spalten ===== */
+.cv-page {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 32px;
+  padding: 28px 32px;
+  min-height: calc(297mm - 120px);
+  break-after: page;
+  page-break-after: always;
+}
+
+.cv-left {
+  border-right: 1px solid var(--color-border);
+  padding-right: 24px;
+}
+
+.cv-name-block {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-heading);
+  margin-bottom: 20px;
+}
+
+.cv-first {
+  font-size: 2.2rem;
+  font-weight: 300;
+  color: var(--color-muted);
+  line-height: 1.1;
+}
+
+.cv-last {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+.cv-section {
+  margin-bottom: 18px;
+}
+
+.cv-title {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.cv-section p {
+  margin: 0 0 6px;
+  font-size: 0.92rem;
+}
+
+.cv-section ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 0.92rem;
+}
+
+.cv-section ul li {
+  margin-bottom: 3px;
+}
+
+.cv-section ul.compact {
+  padding-left: 0;
+  list-style: none;
+}
+
+.cv-section ul.compact li {
+  margin-bottom: 2px;
+}
+
+/* Education rows */
+.edu-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.edu-name { font-weight: 500; }
+.edu-period { color: var(--color-muted); font-size: 0.85rem; }
+
+/* Language table */
+.lang-table {
+  width: 100%;
+  font-size: 0.9rem;
+  border-collapse: collapse;
+}
+
+.lang-table td {
+  padding: 3px 8px 3px 0;
+}
+
+.lang-table td:first-child {
+  font-weight: 500;
+  width: 90px;
+}
+
+/* References */
+.ref-item {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* ===== SEITE 2-4: Einzelne Seiten ===== */
+.full-page {
+  padding: 32px;
+  min-height: 297mm;
+  break-after: page;
+  page-break-after: always;
+}
+
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.full-page p {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+/* Kompetenzen (Seite 2) */
+.competency-section {
+  margin-top: 28px;
+}
+
+.comp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 1rem;
+}
+
+.comp-label { font-weight: 500; }
+.comp-value { font-weight: 700; color: var(--color-primary); }
+
+/* Kompetenzradar (Seite 3) */
+.radar-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.radar-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.radar-svg {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+}
+
+.radar-svg .radar-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Projekt (Seite 4) */
+.project-status {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 8px;
+}
+
+.project-question {
+  font-style: italic;
+  color: var(--color-muted);
+  margin-bottom: 20px !important;
+}
+
+.project-content h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.milestones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.milestones li {
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.milestones .done {
+  color: var(--color-muted);
+}
+
+.diary {
+  font-size: 0.95rem;
+  color: var(--color-muted);
+  margin-top: 8px;
+}
+
+/* Footer (nur Screen) */
+footer.no-print {
+  padding: 16px 32px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ===== PRINT ===== */
+@media print {
+  html, body {
+    background: #fff;
+  }
+
+  .page-wrap {
+    max-width: none;
+    margin: 0;
+  }
+
+  .hero {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .cv-page {
+    min-height: auto;
+    padding: 20px 24px;
+  }
+
+  .full-page {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 10mm;
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .cv-page {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .cv-left {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding-right: 0;
+    padding-bottom: 20px;
+  }
+}

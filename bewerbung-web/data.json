@@ -1,0 +1,87 @@
+{
+  "header": {
+    "firstName": "Frodo",
+    "lastName": "Beutlin",
+    "headerJobTitle": "Zimmermann EFZ",
+    "phone": "(0221) 1234-56",
+    "address": "Hobbitonalley, 4056 Mittelerde",
+    "email": "frodo.beutlin@stud.edubs.ch"
+  },
+  "profile": {
+    "description": "Hoch motiviert und bestrebt, mich weiterzuentwickeln. In meiner Freizeit fördere ich meine Fähigkeiten durch Schach, das Lernen neuer Sprachen und regelmässigem Fitness-Training. Kann es kaum erwarten, meine Einstellung auch im Arbeitsleben einzubringen.",
+    "contactBlock": {
+      "address": "Hobbitonalley 1, 4056 Mittelerde",
+      "email": "frodo.beutlin@stud.edubs.ch",
+      "phone": "076 222 13 44",
+      "birthDate": "26. Oktober 2007",
+      "nationality": "Hobbit (Schutzstatus S)"
+    },
+    "softSkills": [
+      "Entwicklungsbereitschaft",
+      "Flexibilität",
+      "Aufgeschlossenheit",
+      "Motivation und Ausdauer",
+      "Kritikfähigkeit",
+      "Neugier",
+      "Freundliches Auftreten"
+    ],
+    "strengths": "Ausdauer, Zuverlässigkeit, Ruhiges Arbeiten, Reflexionsfähigkeit",
+    "interests": "Natur & Umwelt, Storytelling, Fotografie, Karten & Orientierung",
+    "values": "Verantwortung, Respekt, Durchhalten",
+    "profileCareerGoals": ["Mediamatiker:in EFZ", "Kaufmann/Kauffrau EFZ (E-Profil)"],
+    "competencyBars": [
+      { "label": "Teamfähigkeit", "value": 9, "max": 10 },
+      { "label": "IT-Skills", "value": 6, "max": 10 },
+      { "label": "Selbstorganisation", "value": 8, "max": 10 },
+      { "label": "Kommunikation", "value": 4, "max": 10 }
+    ],
+    "radarCategories": [
+      { "name": "Selbst", "value": 8, "color": "#3498db" },
+      { "name": "Sozial", "value": 9, "color": "#2ecc71" },
+      { "name": "Sprache", "value": 4, "color": "#1abc9c" },
+      { "name": "Mathe", "value": 5, "color": "#e67e22" },
+      { "name": "MINT", "value": 5, "color": "#e74c3c" },
+      { "name": "Digital", "value": 6, "color": "#9b59b6" }
+    ]
+  },
+  "education": [
+    { "title": "Zentrum für Brückenangebote – Basel, BS", "period": "08/2025 - heute" },
+    { "title": "Ausflug nach Mordor", "period": "04/2022 - 06/2024" },
+    { "title": "Hobbitschule, Hobbiton", "period": "09/2012 - 02/2024" }
+  ],
+  "certificates": [
+    "ECDL-Zertifikat für die Module: Textverarbeitung mit MS Word, Tabellenkalkulation mit MS Excel",
+    "TELC Deutsch B1"
+  ],
+  "hobbies": ["Schach spielen", "Deutsch und Englisch lernen", "Fitness", "Lesen"],
+  "languages": [
+    { "name": "Deutsch", "level": "Muttersprache" },
+    { "name": "Russisch", "level": "Fliessend (B1)" },
+    { "name": "Elbisch", "level": "Fliessend (A2-B1)" },
+    { "name": "Englisch", "level": "Grundkenntnisse (A2)" },
+    { "name": "Zwergisch", "level": "Grundkenntnisse (A2)" }
+  ],
+  "references": [
+    { "name": "Dürket Inag", "role": "Lehrerin am ZBA", "phone": "+49 175 6765971" },
+    { "name": "Samuel Brassel", "role": "Lehrer am ZBA", "phone": "079 136 37 64" }
+  ],
+  "skills": [
+    { "name": "Word", "level": "gut" },
+    { "name": "Excel", "level": "gut" },
+    { "name": "10-Fingersystem", "level": "gut" },
+    { "name": "Python", "level": "Grundkenntnisse" }
+  ],
+  "projects": [
+    {
+      "title": "Workshop: Teamwork",
+      "status": "Fertig",
+      "question": "Wie arbeite ich erfolgreich im Team?",
+      "milestones": [
+        { "text": "Team bilden & Rollen klären", "done": false },
+        { "text": "Aufgaben verteilen", "done": true },
+        { "text": "Zwischenpräsentation", "done": false }
+      ],
+      "diaryExcerpt": "20.01.2026 (Umsetzung): Frodo Beutlin: Team-Meeting war produktiv."
+    }
+  ]
+}
