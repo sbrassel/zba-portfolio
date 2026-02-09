@@ -835,6 +835,14 @@ const App: React.FC = () => {
     setTimeout(() => checkAndUpdateAchievements(currentStudent.id), 100);
   };
 
+  const handleDeleteProject = (projectId: string) => {
+    updateStudent(currentStudent.id, (s) => ({
+      ...s,
+      projects: s.projects.filter((p) => p.id !== projectId),
+      mainProjectId: s.mainProjectId === projectId ? undefined : s.mainProjectId,
+    }));
+  };
+
   // Goal Logic (Lifted from Compass)
   const handleToggleGoal = (id: string) => {
     updateStudent(currentStudent.id, (s) => ({
@@ -926,6 +934,13 @@ const App: React.FC = () => {
       }
   };
 
+  const handleDeleteNotification = (notifId: string) => {
+    updateStudent(currentStudent.id, (s) => ({
+      ...s,
+      notifications: s.notifications.filter((n) => n.id !== notifId),
+    }));
+  };
+
   const markAllRead = () => {
     updateStudent(currentStudent.id, (s) => ({
       ...s,
@@ -938,6 +953,26 @@ const App: React.FC = () => {
     updateStudent(currentStudent.id, (s) => ({ ...s, profile: nextProfile }));
     // Check achievements (bio filled, mood tracked, habits completed)
     setTimeout(() => checkAndUpdateAchievements(currentStudent.id), 100);
+  };
+
+  const handleAddGrade = (grade: { subject: string; value: number; date: string; type: 'Prüfung' | 'Vortrag' | 'Projekt' }) => {
+    updateStudent(currentStudent.id, (s) => ({ ...s, grades: [...s.grades, grade] }));
+    setTimeout(() => checkAndUpdateAchievements(currentStudent.id), 100);
+  };
+
+  const handleUpdateGrade = (index: number, grade: { subject: string; value: number; date: string; type: 'Prüfung' | 'Vortrag' | 'Projekt' }) => {
+    updateStudent(currentStudent.id, (s) => {
+      const newGrades = [...s.grades];
+      newGrades[index] = grade;
+      return { ...s, grades: newGrades };
+    });
+  };
+
+  const handleDeleteGrade = (index: number) => {
+    updateStudent(currentStudent.id, (s) => ({
+      ...s,
+      grades: s.grades.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSetMainProject = (projectId: string) => {
@@ -1000,7 +1035,10 @@ const App: React.FC = () => {
             onAddGoal={handleAddGoal}
             profile={profile} 
             setProfile={handleSetProfile} 
-            grades={grades} 
+            grades={grades}
+            onAddGrade={handleAddGrade}
+            onUpdateGrade={handleUpdateGrade}
+            onDeleteGrade={handleDeleteGrade}
             onNavigate={setCurrentSector}
             projects={projects}
             mainProjectId={mainProjectId}
@@ -1010,6 +1048,7 @@ const App: React.FC = () => {
             isNotifOpen={isNotifOpen}
             onToggleNotif={() => setIsNotifOpen(!isNotifOpen)}
             onMarkAllRead={markAllRead}
+            onDeleteNotification={handleDeleteNotification}
             logbuchTiles={logbuchTiles}
             onUpdateLogbuchTiles={handleUpdateLogbuchTiles}
             applications={applicationLogs}
@@ -1038,6 +1077,7 @@ const App: React.FC = () => {
             projects={projects} 
             onUpdateStatus={handleUpdateProjectStatus} 
             onAddProject={handleAddProject}
+            onDeleteProject={handleDeleteProject}
             onUpdateProject={handleUpdateProject}
             mainProjectId={mainProjectId}
             onSetMainProject={handleSetMainProject}
@@ -1045,6 +1085,7 @@ const App: React.FC = () => {
             isNotifOpen={isNotifOpen}
             onToggleNotif={() => setIsNotifOpen(!isNotifOpen)}
             onMarkAllRead={markAllRead}
+            onDeleteNotification={handleDeleteNotification}
           />
         );
       case Sector.SHOWCASE:
@@ -1068,6 +1109,7 @@ const App: React.FC = () => {
             isNotifOpen={isNotifOpen}
             onToggleNotif={() => setIsNotifOpen(!isNotifOpen)}
             onMarkAllRead={markAllRead}
+            onDeleteNotification={handleDeleteNotification}
           />
         );
       case Sector.CALENDAR:
@@ -1114,7 +1156,10 @@ const App: React.FC = () => {
             onAddGoal={handleAddGoal}
             profile={profile} 
             setProfile={handleSetProfile} 
-            grades={grades} 
+            grades={grades}
+            onAddGrade={handleAddGrade}
+            onUpdateGrade={handleUpdateGrade}
+            onDeleteGrade={handleDeleteGrade}
             onNavigate={setCurrentSector}
             projects={projects}
             mainProjectId={mainProjectId}
@@ -1124,6 +1169,7 @@ const App: React.FC = () => {
             isNotifOpen={isNotifOpen}
             onToggleNotif={() => setIsNotifOpen(!isNotifOpen)}
             onMarkAllRead={markAllRead}
+            onDeleteNotification={handleDeleteNotification}
             logbuchTiles={logbuchTiles}
             onUpdateLogbuchTiles={handleUpdateLogbuchTiles}
             applications={applicationLogs}
@@ -1151,15 +1197,17 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold">
+        Zum Inhalt springen
+      </a>
       <Navigation 
         currentSector={currentSector} 
         setSector={setCurrentSector} 
         profile={profile}
       />
       
-      <main className="flex-1 overflow-x-hidden overflow-y-auto h-screen relative scroll-smooth">
+      <main id="main-content" role="main" className="flex-1 overflow-x-hidden overflow-y-auto h-screen relative scroll-smooth" aria-label="Hauptinhalt">
         <div className="relative z-10 p-4 md:p-8 lg:p-12 max-w-[1600px] mx-auto min-h-full">
-           {/* Global Header removed - Notification bell is now inside components */}
            {renderContent()}
         </div>
       </main>

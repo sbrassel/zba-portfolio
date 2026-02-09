@@ -27,6 +27,7 @@ interface ShowcaseProps {
   isNotifOpen: boolean;
   onToggleNotif: () => void;
   onMarkAllRead: () => void;
+  onDeleteNotification?: (id: string) => void;
   competencyData?: CompetencyData;
 }
 
@@ -34,7 +35,7 @@ export const Showcase: React.FC<ShowcaseProps> = ({
   projects, documents, applications, profile, skills, grades,
   onAddApplication, onUpdateApplicationStatus, onUpdateApplicationNote, 
   onAddDocument, onUpdateDocument, onDeleteDocument, onReorderDocuments, 
-  notifications, isNotifOpen, onToggleNotif, onMarkAllRead,
+  notifications, isNotifOpen, onToggleNotif, onMarkAllRead, onDeleteNotification,
   competencyData
 }) => {
   const bestOfProjects = projects.filter(p => p.status === 'completed' || p.status === 'active').slice(0, 3);
@@ -532,6 +533,7 @@ export const Showcase: React.FC<ShowcaseProps> = ({
         isOpen={isNotifOpen}
         onClose={onToggleNotif}
         onMarkAllRead={onMarkAllRead}
+        onDeleteNotification={onDeleteNotification}
       />
 
       {/* Toast für Copy-to-Clipboard */}

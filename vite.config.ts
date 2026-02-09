@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
@@ -9,6 +10,7 @@ export default defineConfig({
         host: '0.0.0.0',
       },
       plugins: [
+        tailwindcss(),
         react(),
         VitePWA({
           registerType: 'autoUpdate',
@@ -29,15 +31,6 @@ export default defineConfig({
           workbox: {
             globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
             runtimeCaching: [
-              {
-                urlPattern: /^https:\/\/cdn\.tailwindcss\.com\/.*/i,
-                handler: 'CacheFirst',
-                options: {
-                  cacheName: 'tailwind-cdn',
-                  expiration: { maxEntries: 1, maxAgeSeconds: 60 * 60 * 24 * 7 },
-                  cacheableResponse: { statuses: [0, 200] },
-                },
-              },
               {
                 urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
                 handler: 'CacheFirst',

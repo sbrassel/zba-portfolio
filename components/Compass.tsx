@@ -42,6 +42,9 @@ interface CompassProps {
   profile: StudentProfile;
   setProfile: (profile: StudentProfile) => void;
   grades: Grade[];
+  onAddGrade?: (grade: Grade) => void;
+  onUpdateGrade?: (index: number, grade: Grade) => void;
+  onDeleteGrade?: (index: number) => void;
   onNavigate: (sector: Sector) => void;
   projects: Project[];
   mainProjectId?: string;
@@ -51,6 +54,7 @@ interface CompassProps {
   isNotifOpen: boolean;
   onToggleNotif: () => void;
   onMarkAllRead: () => void;
+  onDeleteNotification?: (id: string) => void;
   logbuchTiles: LogbuchTile[];
   onUpdateLogbuchTiles: (tiles: LogbuchTile[]) => void;
   applications?: ApplicationLog[];
@@ -219,36 +223,97 @@ const MoodboardCard: React.FC<MoodboardCardProps> = ({ mood, moodMessages = [], 
   );
 };
 
-const GradesBracket: React.FC<{ grades: Grade[] }> = ({ grades }) => {
-    const requestedSubjects = ['Deutsch', 'Allgemeinbildung', 'Mathematik', 'Sport', 'B-MOT'];
-    const filteredGrades = grades.filter(g => requestedSubjects.includes(g.subject));
+const GradesBracket: React.FC<{
+  grades: Grade[];
+  onAddGrade?: (grade: Grade) => void;
+  onUpdateGrade?: (index: number, grade: Grade) => void;
+  onDeleteGrade?: (index: number) => void;
+}> = ({ grades, onAddGrade, onUpdateGrade, onDeleteGrade }) => {
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [editIdx, setEditIdx] = useState<number | null>(null);
+    const [formSubject, setFormSubject] = useState('');
+    const [formValue, setFormValue] = useState('');
+    const [formType, setFormType] = useState<Grade['type']>('Prüfung');
+
+    const subjects = ['Deutsch', 'Allgemeinbildung', 'Mathematik', 'Sport', 'B-MOT', 'Französisch', 'Englisch', 'Informatik', 'Gestalten', 'Sonstiges'];
+
+    const resetForm = () => { setFormSubject(''); setFormValue(''); setFormType('Prüfung'); setShowAddForm(false); setEditIdx(null); };
+
+    const handleSave = () => {
+      const val = parseFloat(formValue);
+      if (!formSubject || isNaN(val) || val < 1 || val > 6) return;
+      const grade: Grade = { subject: formSubject, value: val, date: new Date().toISOString().split('T')[0], type: formType };
+      if (editIdx !== null && onUpdateGrade) {
+        onUpdateGrade(editIdx, grade);
+      } else if (onAddGrade) {
+        onAddGrade(grade);
+      }
+      resetForm();
+    };
+
+    const startEdit = (idx: number, g: Grade) => {
+      setEditIdx(idx);
+      setFormSubject(g.subject);
+      setFormValue(g.value.toString());
+      setFormType(g.type);
+      setShowAddForm(true);
+    };
+
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
             <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-white sticky top-0 z-20">
                 <h3 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><GraduationCap size={12} className="text-indigo-500" /> Noten</h3>
+                {onAddGrade && (
+                  <button onClick={() => { resetForm(); setShowAddForm(true); }} className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-200 transition-colors" aria-label="Note hinzufügen"><Plus size={12} /></button>
+                )}
             </div>
+            {showAddForm && (
+              <div className="p-3 border-b border-slate-100 bg-slate-50 space-y-2 animate-fade-in">
+                <select value={formSubject} onChange={(e) => setFormSubject(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white">
+                  <option value="">Fach wählen...</option>
+                  {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <div className="flex gap-2">
+                  <input type="number" step="0.5" min="1" max="6" value={formValue} onChange={(e) => setFormValue(e.target.value)} placeholder="Note (1-6)" className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white" />
+                  <select value={formType} onChange={(e) => setFormType(e.target.value as Grade['type'])} className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white">
+                    <option value="Prüfung">Prüfung</option>
+                    <option value="Vortrag">Vortrag</option>
+                    <option value="Projekt">Projekt</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleSave} className="flex-1 text-[10px] font-bold py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">{editIdx !== null ? 'Speichern' : 'Hinzufügen'}</button>
+                  <button onClick={resetForm} className="text-[10px] font-bold py-1.5 px-3 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 transition-colors">Abbrechen</button>
+                </div>
+              </div>
+            )}
             <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                {filteredGrades.map((g, idx) => (
+                {grades.map((g, idx) => (
                     <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 border border-slate-100 rounded-xl group hover:border-indigo-200 transition-all">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-400 group-hover:text-indigo-600 transition-colors shadow-sm">{g.subject.substring(0, 3).toUpperCase()}</div>
-                            <div className="min-w-0"><p className="text-[11px] font-bold text-slate-900 truncate">{g.subject}</p><p className="text-[8px] text-slate-400 mt-0.5 uppercase tracking-tighter">{g.type}</p></div>
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-400 group-hover:text-indigo-600 transition-colors shadow-sm shrink-0">{g.subject.substring(0, 3).toUpperCase()}</div>
+                            <div className="min-w-0"><p className="text-[11px] font-bold text-slate-900 truncate">{g.subject}</p><p className="text-[8px] text-slate-400 mt-0.5 uppercase tracking-tighter">{g.type} · {g.date}</p></div>
                         </div>
-                        <div className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold font-['Space_Grotesk'] text-xs shadow-sm ${g.value >= 5 ? 'bg-green-500 text-white' : g.value >= 4 ? 'bg-indigo-600 text-white' : 'bg-red-500 text-white'}`}>{g.value.toFixed(1)}</div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <div className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold font-['Space_Grotesk'] text-xs shadow-sm ${g.value >= 5 ? 'bg-green-500 text-white' : g.value >= 4 ? 'bg-indigo-600 text-white' : 'bg-red-500 text-white'}`}>{g.value.toFixed(1)}</div>
+                          {onUpdateGrade && <button onClick={() => startEdit(idx, g)} className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600" aria-label="Note bearbeiten"><Edit2 size={10} /></button>}
+                          {onDeleteGrade && <button onClick={() => { if (confirm('Note löschen?')) onDeleteGrade(idx); }} className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600" aria-label="Note löschen"><Trash2 size={10} /></button>}
+                        </div>
                     </div>
                 ))}
+                {grades.length === 0 && <p className="text-[10px] text-slate-400 text-center py-4">Noch keine Noten eingetragen.</p>}
             </div>
             <div className="p-3 bg-slate-900 text-white flex justify-between items-center shrink-0">
                 <span className="text-[8px] font-bold uppercase tracking-[0.2em] opacity-60">Schnitt</span>
-                <span className="text-sm font-bold font-['Space_Grotesk'] tracking-tight">{(filteredGrades.reduce((a,b)=>a+b.value,0)/filteredGrades.length || 0).toFixed(2)}</span>
+                <span className="text-sm font-bold font-['Space_Grotesk'] tracking-tight">{(grades.reduce((a,b)=>a+b.value,0)/grades.length || 0).toFixed(2)}</span>
             </div>
         </div>
     );
 };
 
 export const Compass: React.FC<CompassProps> = ({
-  goals, onToggleGoal, onAddGoal, profile, setProfile, grades, onNavigate, projects, mainProjectId, reflections, onAddReflection,
-  notifications, isNotifOpen, onToggleNotif, onMarkAllRead, logbuchTiles, onUpdateLogbuchTiles,
+  goals, onToggleGoal, onAddGoal, profile, setProfile, grades, onAddGrade, onUpdateGrade, onDeleteGrade, onNavigate, projects, mainProjectId, reflections, onAddReflection,
+  notifications, isNotifOpen, onToggleNotif, onMarkAllRead, onDeleteNotification, logbuchTiles, onUpdateLogbuchTiles,
   applications = [], documents = [], onAddApplication, onUpdateApplicationStatus, onUpdateApplicationNote, onAddDocument, onDeleteDocument,
   onMoodMessageForTeacher,
   competencyData, onUpdateCompetencyData,
@@ -326,6 +391,7 @@ export const Compass: React.FC<CompassProps> = ({
         isOpen={isNotifOpen}
         onClose={onToggleNotif}
         onMarkAllRead={onMarkAllRead}
+        onDeleteNotification={onDeleteNotification}
       />
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -414,7 +480,7 @@ export const Compass: React.FC<CompassProps> = ({
                     <button onClick={() => setIsWritingReflection(true)} className="w-full py-3 bg-slate-900 text-white rounded-xl text-[11px] font-bold hover:bg-orange-600 transition-all flex items-center justify-center gap-2 shadow-sm shrink-0"><PenLine size={12} /> Reflexion</button>
                   </div>
                 )}
-                {tile.type === 'grades' && <div className="h-full"><GradesBracket grades={grades} /></div>}
+                {tile.type === 'grades' && <div className="h-full"><GradesBracket grades={grades} onAddGrade={onAddGrade} onUpdateGrade={onUpdateGrade} onDeleteGrade={onDeleteGrade} /></div>}
                 {tile.type === 'achievements' && (() => {
                   const stats = countUnlockedAchievements(profile.achievements);
                   return (

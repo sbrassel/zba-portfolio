@@ -1,6 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import confetti from 'canvas-confetti';
+import './styles.css';
 import App from './App';
+
+// Make confetti globally available (used by various components)
+(window as any).confetti = confetti;
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {

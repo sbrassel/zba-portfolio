@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Trash2 } from 'lucide-react';
 import type { Notification } from '../types';
 
 interface NotificationsPanelProps {
@@ -7,6 +7,7 @@ interface NotificationsPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onMarkAllRead: () => void;
+  onDeleteNotification?: (id: string) => void;
 }
 
 export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
@@ -14,6 +15,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   isOpen,
   onClose,
   onMarkAllRead,
+  onDeleteNotification,
 }) => {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
@@ -79,7 +81,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-slate-900 truncate">
                       {n.title}
                     </p>
@@ -90,9 +92,20 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                       {n.date} • {n.type}
                     </p>
                   </div>
-                  {!n.read && (
-                    <span className="mt-1 w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {!n.read && (
+                      <span className="mt-1 w-2 h-2 rounded-full bg-red-500" />
+                    )}
+                    {onDeleteNotification && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onDeleteNotification(n.id); }}
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        aria-label="Benachrichtigung löschen"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))

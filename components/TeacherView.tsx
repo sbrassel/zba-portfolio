@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { StudentRecord, Notification, Sector, TeacherNotification } from '../types';
-import { Bell, Search, BarChart3, Clock, CheckCircle2, AlertCircle, Send, UserCheck, Smartphone, MoreHorizontal, ArrowUpRight, MessageSquare, Calendar, Users, User, X, Zap, TrendingDown, Activity, Heart, CheckSquare, Smile } from 'lucide-react';
+import { Bell, Search, BarChart3, Clock, CheckCircle2, AlertCircle, Send, UserCheck, Smartphone, MoreHorizontal, ArrowUpRight, MessageSquare, Calendar, Users, User, X, Zap, TrendingDown, Activity, Heart, CheckSquare, Smile, Download } from 'lucide-react';
 import { LABELS } from '../labels';
 
 interface TeacherViewProps {
@@ -123,6 +123,72 @@ export const TeacherView: React.FC<TeacherViewProps> = ({ students, selectedStud
     const avgMood = studentsWithMetrics.filter(s => s.moodAvg > 0).reduce((a, b) => a + b.moodAvg, 0) / studentsWithMetrics.filter(s => s.moodAvg > 0).length || 0;
     return { redCount, yellowCount, greenCount, avgMood, total: students.length };
   }, [studentsWithMetrics, students.length]);
+
+  // CSV-Export der Klassen-Übersicht
+  const exportAsCSV = () => {
+    const header = ['Name', 'Status', 'Stimmung (Ø)', 'Aktive Projekte', 'Projekte Total', 'Noten (Ø)', 'Habits'];
+    const rows = sortedStudents.map(m => {
+      const gradeAvg = m.student.grades.length > 0 ? (m.student.grades.reduce((a, g) => a + g.value, 0) / m.student.grades.length).toFixed(2) : '-';
+      return [
+        m.student.profile.name,
+        m.status,
+        m.moodAvg > 0 ? m.moodAvg.toFixed(1) : '-',
+        m.activeProjects.toString(),
+        m.totalProjects.toString(),
+        gradeAvg,
+        m.habitsDone.toString(),
+      ];
+    });
+    const csv = [header, ...rows].map(r => r.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `klassen-fortschritt_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // PDF-Export der Klassen-Übersicht
+  const exportAsPDF = async () => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('Klassen-Fortschritt', 14, 20);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Erstellt: ${new Date().toLocaleDateString('de-CH')}`, 14, 27);
+
+    const headers = ['Name', 'Status', 'Stimmung', 'Aktive', 'Total', 'Noten (Ø)', 'Habits'];
+    const colWidths = [50, 20, 25, 20, 20, 25, 20];
+    let y = 38;
+
+    // Header
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    headers.forEach((h, i) => {
+      const x = 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
+      doc.text(h, x, y);
+    });
+    y += 6;
+    doc.setDrawColor(200);
+    doc.line(14, y - 3, 280, y - 3);
+
+    doc.setFont('helvetica', 'normal');
+    sortedStudents.forEach(m => {
+      if (y > 190) { doc.addPage(); y = 20; }
+      const gradeAvg = m.student.grades.length > 0 ? (m.student.grades.reduce((a, g) => a + g.value, 0) / m.student.grades.length).toFixed(2) : '-';
+      const row = [m.student.profile.name, m.status === 'green' ? 'OK' : m.status === 'yellow' ? 'Achtung' : 'Kritisch', m.moodAvg > 0 ? m.moodAvg.toFixed(1) : '-', m.activeProjects.toString(), m.totalProjects.toString(), gradeAvg, m.habitsDone.toString()];
+      row.forEach((val, i) => {
+        const x = 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
+        doc.text(val, x, y);
+      });
+      y += 5;
+    });
+
+    doc.save(`klassen-fortschritt_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
 
   // Detail-Ansicht: Ausgewählter Schüler
   const selectedStudent = useMemo(
@@ -374,7 +440,19 @@ export const TeacherView: React.FC<TeacherViewProps> = ({ students, selectedStud
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={exportAsCSV}
+              className="text-[10px] font-bold uppercase tracking-widest text-green-600 hover:text-green-700 px-3 py-2 rounded-lg hover:bg-green-50 border border-green-200 flex items-center gap-1.5"
+            >
+              <Download className="w-3 h-3" /> CSV
+            </button>
+            <button
+              onClick={exportAsPDF}
+              className="text-[10px] font-bold uppercase tracking-widest text-red-600 hover:text-red-700 px-3 py-2 rounded-lg hover:bg-red-50 border border-red-200 flex items-center gap-1.5"
+            >
+              <Download className="w-3 h-3" /> PDF
+            </button>
             <button
               onClick={onResetDemo}
               className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg hover:bg-slate-100 border border-slate-200"

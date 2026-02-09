@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Project, ProjectType, ProjectResource, DiaryEntry, Notification } from '../types';
-import { Plus, Book, LayoutTemplate, ArrowLeft, CheckCircle2, Clock, Wrench, FileText, Download, ExternalLink, X, Trash2, Bell, Star, Footprints, Link } from 'lucide-react';
+import { Plus, Book, LayoutTemplate, ArrowLeft, CheckCircle2, Clock, Wrench, FileText, Download, ExternalLink, X, Trash2, Bell, Star, Footprints, Link, Image } from 'lucide-react';
 import { INITIAL_RESOURCES } from '../constants';
 import { NotificationsPanel } from './NotificationsPanel';
 import { LABELS } from '../labels';
@@ -10,6 +10,7 @@ interface WorkshopProps {
   projects: Project[];
   onUpdateStatus: (id: string, status: Project['status']) => void;
   onAddProject: (project: Project) => void;
+  onDeleteProject: (id: string) => void;
   onUpdateProject: (project: Project) => void;
   mainProjectId?: string;
   onSetMainProject: (id: string) => void;
@@ -17,9 +18,10 @@ interface WorkshopProps {
   isNotifOpen: boolean;
   onToggleNotif: () => void;
   onMarkAllRead: () => void;
+  onDeleteNotification?: (id: string) => void;
 }
 
-export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, onAddProject, onUpdateProject, mainProjectId, onSetMainProject, notifications, isNotifOpen, onToggleNotif, onMarkAllRead }) => {
+export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, onAddProject, onDeleteProject, onUpdateProject, mainProjectId, onSetMainProject, notifications, isNotifOpen, onToggleNotif, onMarkAllRead, onDeleteNotification }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'canvas' | 'diary'>('canvas');
   const [viewMode, setViewMode] = useState<'board' | 'toolbox'>('board');
@@ -36,10 +38,12 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
   const [newResourceType, setNewResourceType] = useState<ProjectResource['type']>('link');
   const [newMilestoneText, setNewMilestoneText] = useState('');
   const [newMilestoneWeek, setNewMilestoneWeek] = useState(1);
+  const [filterType, setFilterType] = useState<ProjectType | 'all'>('all');
 
   const [isNewEntryModalOpen, setIsNewEntryModalOpen] = useState(false);
   const [newEntryContent, setNewEntryContent] = useState('');
   const [newEntryPhase, setNewEntryPhase] = useState<DiaryEntry['phase']>('Umsetzung');
+  const [newEntryImage, setNewEntryImage] = useState<string | undefined>(undefined);
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -138,17 +142,28 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
     setNewMilestoneText('');
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Bild darf max. 2 MB gross sein.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => setNewEntryImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const submitNewEntry = () => {
       if (!selectedProject || !newEntryContent.trim()) return;
       const newEntry: DiaryEntry = {
           id: Date.now().toString(),
           date: new Date().toLocaleDateString('de-CH'),
           content: newEntryContent,
-          phase: newEntryPhase
+          phase: newEntryPhase,
+          image: newEntryImage,
       };
       onUpdateProject({ ...selectedProject, entries: [newEntry, ...selectedProject.entries] });
       setIsNewEntryModalOpen(false);
       setNewEntryContent('');
+      setNewEntryImage(undefined);
   };
 
   const getCategoryBadgeStyle = (type: ProjectType) => {
@@ -157,6 +172,10 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
           case 'mini': return 'bg-orange-100 text-orange-700';
           case 'trial': return 'bg-blue-100 text-blue-700';
           case 'application': return 'bg-pink-100 text-pink-700';
+          case 'group': return 'bg-green-100 text-green-700';
+          case 'exam': return 'bg-red-100 text-red-700';
+          case 'reflection': return 'bg-amber-100 text-amber-700';
+          case 'todo': return 'bg-cyan-100 text-cyan-700';
           default: return 'bg-slate-100 text-slate-700';
       }
   };
@@ -168,17 +187,26 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
           <button onClick={() => { setSelectedProjectId(null); setViewMode('board'); }} className="flex items-center gap-2 text-slate-700 hover:text-blue-600 font-bold text-xs bg-white border border-slate-200 px-3 py-2 rounded-lg shadow-sm hover:border-blue-200 group">
             <ArrowLeft className="w-3.5 h-3.5" /> {LABELS.project.board}
           </button>
-          <button
-            onClick={() => onSetMainProject(selectedProject.id)}
-            className={`flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${
-              mainProjectId === selectedProject.id
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
-            }`}
-          >
-            <Star className="w-3.5 h-3.5" />
-            {mainProjectId === selectedProject.id ? LABELS.project.mainProject : LABELS.project.setAsMain}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onSetMainProject(selectedProject.id)}
+              className={`flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${
+                mainProjectId === selectedProject.id
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
+              }`}
+            >
+              <Star className="w-3.5 h-3.5" />
+              {mainProjectId === selectedProject.id ? LABELS.project.mainProject : LABELS.project.setAsMain}
+            </button>
+            <button
+              onClick={() => { if (confirm('Projekt wirklich löschen?')) { onDeleteProject(selectedProject.id); setSelectedProjectId(null); } }}
+              className="flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+              aria-label="Projekt löschen"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Löschen
+            </button>
+          </div>
         </div>
         
         <div className="flex-1 bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden shadow-sm">
@@ -333,6 +361,7 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
                             <div className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
                                <span className="text-[8px] font-bold uppercase text-slate-400 mb-0.5 block">{(LABELS.phases as Record<string, string>)[entry.phase] ?? entry.phase} • {entry.date}</span>
                                <p className="text-slate-600 text-[11px] leading-relaxed">{entry.content}</p>
+                               {entry.image && <img src={entry.image} alt="Tagebuch-Bild" className="mt-2 rounded-lg border border-slate-200 max-h-48 object-cover" />}
                             </div>
                          </div>
                       ))}
@@ -352,6 +381,7 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
         isOpen={isNotifOpen}
         onClose={onToggleNotif}
         onMarkAllRead={onMarkAllRead}
+        onDeleteNotification={onDeleteNotification}
       />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -409,11 +439,22 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
-          <div className="flex gap-4 h-full min-w-[800px]">
-            <KanbanColumn title={LABELS.projectColumns.ideas} status="planning" projects={projects.filter(p => p.status === 'planning')} onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop} onSelectProject={setSelectedProjectId} color="border-t-slate-300" getBadgeStyle={getCategoryBadgeStyle} />
-            <KanbanColumn title={LABELS.projectColumns.active} status="active" projects={projects.filter(p => p.status === 'active')} onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop} onSelectProject={setSelectedProjectId} color="border-t-blue-500" getBadgeStyle={getCategoryBadgeStyle} />
-            <KanbanColumn title={LABELS.projectColumns.done} status="completed" projects={projects.filter(p => p.status === 'completed')} onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop} onSelectProject={setSelectedProjectId} color="border-t-green-500" getBadgeStyle={getCategoryBadgeStyle} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Projekttyp-Filter */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <button onClick={() => setFilterType('all')} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${filterType === 'all' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}>Alle</button>
+            {(['passion', 'mini', 'exam', 'trial', 'application', 'group', 'reflection', 'todo'] as ProjectType[]).filter(t => projects.some(p => p.type === t)).map(t => (
+              <button key={t} onClick={() => setFilterType(t)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${filterType === t ? `${getCategoryBadgeStyle(t)} border-current` : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}>
+                {(LABELS.projectTypes as Record<string, string>)[t] ?? t}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
+            <div className="flex gap-4 h-full min-w-[800px]">
+              <KanbanColumn title={LABELS.projectColumns.ideas} status="planning" projects={(filterType === 'all' ? projects : projects.filter(p => p.type === filterType)).filter(p => p.status === 'planning')} onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop} onSelectProject={setSelectedProjectId} color="border-t-slate-300" getBadgeStyle={getCategoryBadgeStyle} />
+              <KanbanColumn title={LABELS.projectColumns.active} status="active" projects={(filterType === 'all' ? projects : projects.filter(p => p.type === filterType)).filter(p => p.status === 'active')} onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop} onSelectProject={setSelectedProjectId} color="border-t-blue-500" getBadgeStyle={getCategoryBadgeStyle} />
+              <KanbanColumn title={LABELS.projectColumns.done} status="completed" projects={(filterType === 'all' ? projects : projects.filter(p => p.type === filterType)).filter(p => p.status === 'completed')} onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop} onSelectProject={setSelectedProjectId} color="border-t-green-500" getBadgeStyle={getCategoryBadgeStyle} />
+            </div>
           </div>
         </div>
       )}
@@ -457,8 +498,8 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Typ</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['passion', 'mini', 'exam'] as ProjectType[]).map((type) => (
+                <div className="grid grid-cols-4 gap-2">
+                  {(['passion', 'mini', 'exam', 'trial', 'application', 'group', 'reflection', 'todo'] as ProjectType[]).map((type) => (
                     <button
                       key={type}
                       onClick={() => setNewProjectType(type)}
@@ -468,7 +509,7 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
                           : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                       }`}
                     >
-                      {type === 'passion' ? LABELS.projectTypes.passion : type === 'mini' ? LABELS.projectTypes.mini : LABELS.projectTypes.exam}
+                      {(LABELS.projectTypes as Record<string, string>)[type] ?? type}
                     </button>
                   ))}
                 </div>
@@ -538,6 +579,21 @@ export const Workshop: React.FC<WorkshopProps> = ({ projects, onUpdateStatus, on
                   placeholder="Was hast du heute gemacht? Welche Erkenntnisse hattest du?"
                   className="w-full h-32 bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-blue-500 outline-none resize-none"
                 />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Bild (optional)</label>
+                <div className="flex items-center gap-3">
+                  <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                    <Image size={14} /> Bild wählen
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                  {newEntryImage && (
+                    <div className="relative">
+                      <img src={newEntryImage} alt="Vorschau" className="w-16 h-16 object-cover rounded-lg border border-slate-200" />
+                      <button onClick={() => setNewEntryImage(undefined)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px]" aria-label="Bild entfernen"><X size={10} /></button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">

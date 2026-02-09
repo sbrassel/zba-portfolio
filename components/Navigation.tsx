@@ -56,7 +56,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentSector, setSector
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 space-y-1 py-4">
+      <nav className="flex-1 px-3 space-y-1 py-4" aria-label="Hauptnavigation">
         {navItems.map((item) => (
           <button
             key={item.id}
@@ -86,6 +86,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentSector, setSector
         <div className="pt-3 mt-3 border-t border-slate-100">
            <button
             onClick={() => setSector(Sector.TEACHER)}
+            aria-label="Lehreransicht öffnen"
+            aria-current={currentSector === Sector.TEACHER ? 'page' : undefined}
             className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 group ${
               currentSector === Sector.TEACHER
                 ? 'bg-slate-900 text-white shadow-sm'
