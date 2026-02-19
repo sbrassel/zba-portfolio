@@ -101,3 +101,20 @@ select:focus-visible {
 .zoom-in-95 {
   animation-name: zoom-in-95;
 }
+
+/* Safe area for mobile bottom navigation (notch/home indicator) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent overscroll on iOS */
+html {
+  overscroll-behavior: none;
+}
+
+/* Touch-friendly tap targets on mobile */
+@media (max-width: 767px) {
+  button, a, select, input, textarea {
+    min-height: 36px;
+  }
+}

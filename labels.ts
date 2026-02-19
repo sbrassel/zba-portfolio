@@ -173,17 +173,12 @@ export const LABELS = {
     week: 'Woche',
   },
 
-  // Projekt-Phasen (für Tagebuch – Anzeige)
+  // Projekt-Phasen
   phases: {
-    research: 'Suchen',
-    prototyping: 'Ausprobieren',
-    implementation: 'Machen',
-    completion: 'Fertig',
-    // Technische Werte aus types (DiaryEntry.phase) -> Anzeige
-    Recherche: 'Suchen',
-    Prototyping: 'Ausprobieren',
-    Umsetzung: 'Machen',
-    Abschluss: 'Fertig',
+    Planen: 'Planen',
+    Recherche: 'Recherche',
+    Umsetzung: 'Umsetzung',
+    Abschluss: 'Abschluss',
   },
 
   // Tagebuch (Projekt)
@@ -192,6 +187,27 @@ export const LABELS = {
     newEntry: '+ Eintrag',
     placeholder: 'Was hast du heute gemacht?',
     save: 'Speichern',
+    teacherFeedback: 'Feedback Lehrperson',
+    noEntries: 'Noch keine Einträge',
+    deleteEntry: 'Eintrag löschen?',
+    deleteEntryDesc: 'Dieser Eintrag wird unwiderruflich gelöscht.',
+  },
+
+  // Projekt-Detail Tabs
+  projectTabs: {
+    canvas: 'Projektplan',
+    diary: 'Tagebuch',
+    overview: 'Übersicht',
+  },
+
+  // Projekt-Übersicht Tab
+  projectOverview: {
+    progress: 'Fortschritt',
+    currentPhase: 'Aktuelle Phase',
+    lastEntry: 'Letzter Eintrag',
+    lastActivity: 'Letzte Aktivität',
+    completeProject: 'Projekt abschliessen',
+    noEntries: 'Noch keine Tagebucheinträge',
   },
 
   // Toast / Benachrichtigungen
@@ -325,6 +341,20 @@ export const LABELS = {
     empty: 'Leer',
     demo: 'Demo',
     entries: 'Einträge',
+    average: 'Schnitt',
+    subjects: 'Fächer',
+    material: 'Material',
+    steps: 'Schritte',
+  },
+
+  // Bestätigungen
+  confirm: {
+    deleteProject: 'Projekt löschen?',
+    deleteProjectDesc: 'Dieses Projekt und alle Einträge werden unwiderruflich gelöscht.',
+    deleteGrade: 'Note löschen?',
+    wrongPin: 'Falscher PIN. Bitte erneut versuchen.',
+    pinPrompt: 'PIN eingeben für Zugang',
+    unlock: 'Entsperren',
   },
 
   // SkillTree / Kompetenzen

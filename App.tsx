@@ -6,7 +6,7 @@ import { Workshop } from './components/Workshop';
 import { Showcase } from './components/Showcase';
 import { Calendar } from './components/Calendar';
 import { TeacherView } from './components/TeacherView';
-import { Sector, Project, ProjectResource, CalendarEvent, TimetableEntry, Notification, Goal, ApplicationLog, DossierDocument, ReflectionEntry, AppData, StudentRecord, LogbuchTile, LogbuchTileType, LogbuchTileSize, TeacherNotification, Achievement } from './types';
+import { Sector, Project, ProjectResource, ProjectPhase, Milestone, CalendarEvent, TimetableEntry, Notification, Goal, ApplicationLog, DossierDocument, ReflectionEntry, AppData, StudentRecord, LogbuchTile, LogbuchTileType, LogbuchTileSize, TeacherNotification, Achievement } from './types';
 import { INITIAL_PROFILE, INITIAL_SKILLS } from './constants';
 import { clearAppData, loadAppData, saveAppData, needsAchievementsMigration, markAchievementsMigrated, exportAppDataAsJson, importAppDataFromJson } from './storage';
 import { checkAchievements, awardXP, initializeAchievements } from './achievements';
@@ -28,12 +28,27 @@ function migrateProjectResources(project: Project & { resources?: unknown }): Pr
   return { ...project, resources };
 }
 
+function migrateProjectPhase(project: Project): Project {
+  if (project.currentPhase) return project;
+  const phase: ProjectPhase =
+    project.status === 'completed' ? 'Abschluss' :
+    project.status === 'active' ? 'Umsetzung' : 'Planen';
+  const milestones: Milestone[] = project.milestones.map((m, i) => ({
+    ...m,
+    id: (m as any).id || `${project.id}_m${i}`,
+    phase: (m as any).phase,
+  }));
+  return { ...project, currentPhase: phase, milestones };
+}
+
 function migrateStudentsProjects(data: AppData): AppData {
   return {
     ...data,
     students: data.students.map((s) => ({
       ...s,
-      projects: s.projects.map((p) => migrateProjectResources(p as Project & { resources?: unknown })),
+      projects: s.projects
+        .map((p) => migrateProjectResources(p as Project & { resources?: unknown }))
+        .map(migrateProjectPhase),
     })),
   };
 }
@@ -271,6 +286,7 @@ function createDemoStudents(): StudentRecord[] {
                   : 'Passion Project: Storytelling-Portfolio',
       type: 'passion',
       status: 'active',
+      currentPhase: 'Umsetzung',
       passionQuestion:
         archetype === 'digital'
           ? 'Wie zeige ich meine Skills so, dass Betriebe sofort verstehen, was ich kann?'
@@ -285,9 +301,9 @@ function createDemoStudents(): StudentRecord[] {
                   : 'Wie erzähle ich meine Lernreise so, dass sie authentisch wirkt?',
       subjects: ['Deutsch', 'ABU'],
       milestones: [
-        { week: 3, text: 'Ziel definieren + Plan machen', completed: true },
-        { week: 4, text: 'Ersten Prototyp bauen', completed: randomInt(0, 1) === 1 },
-        { week: 5, text: 'Feedback holen & verbessern', completed: false },
+        { id: mkId('m'), week: 3, text: 'Ziel definieren + Plan machen', completed: true },
+        { id: mkId('m'), week: 4, text: 'Ersten Prototyp bauen', completed: randomInt(0, 1) === 1 },
+        { id: mkId('m'), week: 5, text: 'Feedback holen & verbessern', completed: false },
       ],
       resources: [{ id: mkId('res'), title: 'Checkliste, Beispiele, Feedback', type: 'note' }],
       entries: [
@@ -318,11 +334,12 @@ function createDemoStudents(): StudentRecord[] {
                   : 'Mini-Lektion: Argumentieren (ABU) in 15 Minuten',
       type: 'mini',
       status: randomInt(0, 1) === 0 ? 'planning' : 'active',
+      currentPhase: 'Planen',
       passionQuestion: 'Wie erkläre ich ein Thema so, dass es andere sofort verstehen?',
       subjects: ['Deutsch', 'B-MOT'],
       milestones: [
-        { week: 6, text: 'Kurz-Input strukturieren (3 Punkte)', completed: randomInt(0, 1) === 1 },
-        { week: 6, text: '1 Übung + 1 Mini-Check vorbereiten', completed: false },
+        { id: mkId('m'), week: 6, text: 'Kurz-Input strukturieren (3 Punkte)', completed: randomInt(0, 1) === 1 },
+        { id: mkId('m'), week: 6, text: '1 Übung + 1 Mini-Check vorbereiten', completed: false },
       ],
       resources: [{ id: mkId('res'), title: 'Notizen, Beispiele, 1 Seite Handout', type: 'note' }],
       entries: [],
@@ -335,10 +352,11 @@ function createDemoStudents(): StudentRecord[] {
       type: 'exam',
       status: 'planning',
       passionQuestion: 'Wie bereite ich mich gezielt vor statt “einfach alles” zu lernen?',
+      currentPhase: 'Planen',
       subjects: ['ABU', 'Deutsch'],
       milestones: [
-        { week: 5, text: 'Lernziele prüfen & 10 Karteikarten', completed: randomInt(0, 1) === 1 },
-        { week: 5, text: '1 Übungsaufsatz (45min)', completed: false },
+        { id: mkId('m'), week: 5, text: 'Lernziele prüfen & 10 Karteikarten', completed: randomInt(0, 1) === 1 },
+        { id: mkId('m'), week: 5, text: '1 Übungsaufsatz (45min)', completed: false },
       ],
       resources: [{ id: mkId('res'), title: 'Lernziele, Musterlösung', type: 'note' }],
       entries: [],
@@ -356,11 +374,12 @@ function createDemoStudents(): StudentRecord[] {
         title: `Bewerbung: ${companies[randomInt(0, companies.length - 1)]}`,
         type: 'application',
         status: ['planning', 'active'][randomInt(0, 1)] as 'planning' | 'active',
+        currentPhase: 'Umsetzung',
         passionQuestion: 'Wie überzeuge ich mit meinem Motivationsschreiben?',
         subjects: ['Deutsch'],
         milestones: [
-          { week: 7, text: 'CV aktualisieren', completed: randomInt(0, 1) === 1 },
-          { week: 8, text: 'Motivationsschreiben verfassen', completed: false },
+          { id: mkId('m'), week: 7, text: 'CV aktualisieren', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 8, text: 'Motivationsschreiben verfassen', completed: false },
         ],
         resources: [{ id: mkId('res'), title: 'Vorlagen, Portfolio', type: 'note' }],
         entries: [],
@@ -376,12 +395,13 @@ function createDemoStudents(): StudentRecord[] {
         title: 'Schnupperlehre: ' + berufe[randomInt(0, berufe.length - 1)],
         type: 'trial',
         status: randomInt(0, 1) === 0 ? 'planning' : 'completed',
+        currentPhase: 'Recherche',
         passionQuestion: 'Passt dieser Beruf wirklich zu mir?',
         subjects: ['BO'],
         milestones: [
-          { week: 4, text: 'Termin vereinbaren', completed: true },
-          { week: 5, text: 'Schnuppern absolvieren', completed: randomInt(0, 1) === 1 },
-          { week: 6, text: 'Reflexion schreiben', completed: false },
+          { id: mkId('m'), week: 4, text: 'Termin vereinbaren', completed: true },
+          { id: mkId('m'), week: 5, text: 'Schnuppern absolvieren', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 6, text: 'Reflexion schreiben', completed: false },
         ],
         resources: [{ id: mkId('res'), title: 'Fragenliste, Notizblock', type: 'note' }],
         entries: randomInt(0, 1) === 1 ? [{
@@ -402,12 +422,13 @@ function createDemoStudents(): StudentRecord[] {
         title: groupTopics[randomInt(0, groupTopics.length - 1)],
         type: 'group',
         status: ['planning', 'active', 'completed'][randomInt(0, 2)] as 'planning' | 'active' | 'completed',
+        currentPhase: 'Umsetzung',
         passionQuestion: 'Wie arbeite ich erfolgreich im Team?',
         subjects: ['B-MOT', 'Deutsch'],
         milestones: [
-          { week: 2, text: 'Team bilden & Rollen klären', completed: randomInt(0, 1) === 1 },
-          { week: 3, text: 'Aufgaben verteilen', completed: randomInt(0, 1) === 1 },
-          { week: 4, text: 'Zwischenpräsentation', completed: false },
+          { id: mkId('m'), week: 2, text: 'Team bilden & Rollen klären', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 3, text: 'Aufgaben verteilen', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 4, text: 'Zwischenpräsentation', completed: false },
         ],
         resources: [{ id: mkId('res'), title: 'Team-Chat, Trello', type: 'note' }],
         entries: randomInt(0, 1) === 1 ? [{
@@ -427,11 +448,12 @@ function createDemoStudents(): StudentRecord[] {
         title: 'Reflexion: Meine Lernreise',
         type: 'reflection',
         status: ['planning', 'active'][randomInt(0, 1)] as 'planning' | 'active',
+        currentPhase: 'Recherche',
         passionQuestion: 'Was habe ich bisher gelernt und wie kann ich mich weiterentwickeln?',
         subjects: ['ABU'],
         milestones: [
-          { week: 6, text: 'Stärken & Schwächen analysieren', completed: randomInt(0, 1) === 1 },
-          { week: 7, text: 'Ziele für nächste Phase setzen', completed: false },
+          { id: mkId('m'), week: 6, text: 'Stärken & Schwächen analysieren', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 7, text: 'Ziele für nächste Phase setzen', completed: false },
         ],
         resources: [{ id: mkId('res'), title: 'Reflexionsfragen, Logbuch', type: 'note' }],
         entries: [],
@@ -447,11 +469,12 @@ function createDemoStudents(): StudentRecord[] {
         title: todos[randomInt(0, todos.length - 1)],
         type: 'todo',
         status: ['planning', 'active'][randomInt(0, 1)] as 'planning' | 'active',
+        currentPhase: 'Planen',
         passionQuestion: 'Wie organisiere ich mich für wichtige Termine?',
         subjects: ['BO', 'B-MOT'],
         milestones: [
-          { week: 3, text: 'Termin notieren & vorbereiten', completed: randomInt(0, 1) === 1 },
-          { week: 4, text: 'Materialien sammeln', completed: false },
+          { id: mkId('m'), week: 3, text: 'Termin notieren & vorbereiten', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 4, text: 'Materialien sammeln', completed: false },
         ],
         resources: [{ id: mkId('res'), title: 'Kalender, Checkliste', type: 'note' }],
         entries: [],
@@ -467,11 +490,12 @@ function createDemoStudents(): StudentRecord[] {
         title: exams[randomInt(0, exams.length - 1)],
         type: 'exam',
         status: 'planning',
+        currentPhase: 'Planen',
         passionQuestion: 'Wie bereite ich mich effizient vor?',
-        subjects: ['Mathematik', 'Deutsch', 'Allgemeinbildung'][randomInt(0, 2)],
+        subjects: [['Mathematik', 'Deutsch', 'Allgemeinbildung'][randomInt(0, 2)]],
         milestones: [
-          { week: 5, text: 'Lernplan erstellen', completed: randomInt(0, 1) === 1 },
-          { week: 6, text: 'Übungsaufgaben lösen', completed: false },
+          { id: mkId('m'), week: 5, text: 'Lernplan erstellen', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 6, text: 'Übungsaufgaben lösen', completed: false },
         ],
         resources: [{ id: mkId('res'), title: 'Altprüfungen, Formelsammlung', type: 'note' }],
         entries: [],
@@ -492,11 +516,12 @@ function createDemoStudents(): StudentRecord[] {
         title: passionTopics[randomInt(0, passionTopics.length - 1)],
         type: 'passion',
         status: ['planning', 'active'][randomInt(0, 1)] as 'planning' | 'active',
+        currentPhase: 'Umsetzung',
         passionQuestion: 'Wie zeige ich meine Leidenschaft praktisch?',
         subjects: ['B-MOT', 'Deutsch'],
         milestones: [
-          { week: 4, text: 'Konzept entwickeln', completed: randomInt(0, 1) === 1 },
-          { week: 5, text: 'Umsetzung starten', completed: false },
+          { id: mkId('m'), week: 4, text: 'Konzept entwickeln', completed: randomInt(0, 1) === 1 },
+          { id: mkId('m'), week: 5, text: 'Umsetzung starten', completed: false },
         ],
         resources: [{ id: mkId('res'), title: 'Inspiration, Tools', type: 'note' }],
         entries: [],
@@ -801,11 +826,14 @@ const App: React.FC = () => {
     exportAppDataAsJson(appData);
   };
 
+  const [importError, setImportError] = useState(false);
+
   const handleImportBackup = async (file: File) => {
     const text = await file.text();
     const imported = importAppDataFromJson(text);
     if (!imported) {
-      alert(LABELS.backup.importError);
+      setImportError(true);
+      setTimeout(() => setImportError(false), 3000);
       return;
     }
     setAppData(imported);
@@ -814,16 +842,20 @@ const App: React.FC = () => {
   const handleUpdateProjectStatus = (projectId: string, newStatus: Project['status']) => {
     updateStudent(currentStudent.id, (s) => ({
       ...s,
-      projects: s.projects.map((p) => (p.id === projectId ? { ...p, status: newStatus } : p)),
+      projects: s.projects.map((p) => {
+        if (p.id !== projectId) return p;
+        const currentPhase: ProjectPhase = newStatus === 'completed' ? 'Abschluss' : newStatus === 'active' ? (p.currentPhase === 'Planen' ? 'Umsetzung' : p.currentPhase) : p.currentPhase;
+        return { ...p, status: newStatus, currentPhase, lastUpdated: new Date().toISOString().split('T')[0] };
+      }),
     }));
-    // Check achievements when project status changes (especially completion)
     setTimeout(() => checkAndUpdateAchievements(currentStudent.id), 100);
   };
 
   const handleUpdateProject = (updatedProject: Project) => {
+    const withTimestamp = { ...updatedProject, lastUpdated: new Date().toISOString().split('T')[0] };
     updateStudent(currentStudent.id, (s) => ({
       ...s,
-      projects: s.projects.map((p) => (p.id === updatedProject.id ? updatedProject : p)),
+      projects: s.projects.map((p) => (p.id === withTimestamp.id ? withTimestamp : p)),
     }));
     // Check achievements (milestone completion, diary entries)
     setTimeout(() => checkAndUpdateAchievements(currentStudent.id), 100);
@@ -1148,55 +1180,12 @@ const App: React.FC = () => {
           />
         );
       default:
-        return (
-          <Compass 
-            skills={skills} 
-            goals={goals} 
-            onToggleGoal={handleToggleGoal}
-            onAddGoal={handleAddGoal}
-            profile={profile} 
-            setProfile={handleSetProfile} 
-            grades={grades}
-            onAddGrade={handleAddGrade}
-            onUpdateGrade={handleUpdateGrade}
-            onDeleteGrade={handleDeleteGrade}
-            onNavigate={setCurrentSector}
-            projects={projects}
-            mainProjectId={mainProjectId}
-            reflections={reflections}
-            onAddReflection={handleAddReflection}
-            notifications={notifications}
-            isNotifOpen={isNotifOpen}
-            onToggleNotif={() => setIsNotifOpen(!isNotifOpen)}
-            onMarkAllRead={markAllRead}
-            onDeleteNotification={handleDeleteNotification}
-            logbuchTiles={logbuchTiles}
-            onUpdateLogbuchTiles={handleUpdateLogbuchTiles}
-            applications={applicationLogs}
-            documents={documents}
-            onAddApplication={handleAddApplication}
-            onUpdateApplicationStatus={handleUpdateApplicationStatus}
-            onUpdateApplicationNote={handleUpdateApplicationNote}
-            onAddDocument={handleAddDocument}
-            onDeleteDocument={handleDeleteDocument}
-            onMoodMessageForTeacher={handleMoodMessageForTeacher}
-            competencyData={competencyData}
-            onUpdateCompetencyData={handleUpdateCompetencyData}
-            onExportBackup={handleExportBackup}
-            onImportBackup={handleImportBackup}
-            newlyUnlockedAchievements={newlyUnlockedAchievements}
-            onClearAchievementNotification={clearAchievementNotification}
-            xpGained={xpGained}
-            onClearXpNotification={clearXpNotification}
-            showLevelUpModal={showLevelUpModal}
-            onCloseLevelUpModal={closeLevelUpModal}
-          />
-        );
+        return null;
     }
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
+    <div className="flex min-h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold">
         Zum Inhalt springen
       </a>
@@ -1207,7 +1196,12 @@ const App: React.FC = () => {
       />
       
       <main id="main-content" role="main" className="flex-1 overflow-x-hidden overflow-y-auto h-screen relative scroll-smooth" aria-label="Hauptinhalt">
-        <div className="relative z-10 p-4 md:p-8 lg:p-12 max-w-[1600px] mx-auto min-h-full">
+        {importError && (
+          <div className="fixed bottom-6 right-6 z-[100] px-4 py-3 rounded-xl shadow-lg bg-red-600 text-white flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 text-sm font-medium" role="alert">
+            {LABELS.backup.importError}
+          </div>
+        )}
+        <div className="relative z-10 p-4 md:p-8 lg:p-12 pb-24 md:pb-8 max-w-[1600px] mx-auto min-h-full">
            {renderContent()}
         </div>
       </main>

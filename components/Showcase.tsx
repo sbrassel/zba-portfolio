@@ -102,7 +102,8 @@ export const Showcase: React.FC<ShowcaseProps> = ({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || file.type !== 'application/pdf') {
-      alert('Bitte eine PDF-Datei auswählen');
+      showToast('Bitte eine PDF-Datei auswählen', 'error');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
@@ -118,17 +119,18 @@ export const Showcase: React.FC<ShowcaseProps> = ({
         pdfData: base64
       };
       onAddDocument(newDoc);
+      showToast('PDF hochgeladen', 'success');
     };
     reader.readAsDataURL(file);
     
-    // Reset file input
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || file.type !== 'application/pdf') {
-      alert('Bitte eine PDF-Datei auswählen');
+      showToast('Bitte eine PDF-Datei auswählen', 'error');
+      if (coverFileInputRef.current) coverFileInputRef.current.value = '';
       return;
     }
     if (coverDocument) onDeleteDocument(coverDocument.id);
@@ -288,7 +290,7 @@ export const Showcase: React.FC<ShowcaseProps> = ({
     } catch (error) {
       console.error('Dossier Export Fehler:', error);
       setIsDossierExporting(false);
-      alert('Fehler beim Erstellen des Dossiers');
+      showToast('Fehler beim Erstellen des Dossiers', 'error');
     }
   };
 
@@ -452,7 +454,7 @@ export const Showcase: React.FC<ShowcaseProps> = ({
       } catch (error) {
         console.error('PDF Export Fehler:', error);
         setIsExporting(false);
-        alert('Fehler beim Erstellen des PDFs');
+        showToast('Fehler beim Erstellen des PDFs', 'error');
       }
     }, 500);
   };

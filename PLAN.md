@@ -3,39 +3,36 @@
 ## ✅ Bereits umgesetzt
 - Logbuch (Compass): Profil, Kompetenzrad, Noten, Wochenfokus, Habits, Reflexionen, Erfolge
 - Werkstatt: Kanban, Projekt-Canvas, Tagebuch, Meilensteine, Modals (Neu, Eintrag)
-- Showcase: Top-Projekte, Bewerbungsdossier, Lehrstellen-Check, Resilienz-Check, PDF-Export (Demo)
+- Showcase: Top-Projekte, Bewerbungsdossier, Lehrstellen-Check, Resilienz-Check, PDF-Export
 - Lehrer-Cockpit: Schülerauswahl, Feedback senden (Info, Lob, **Verbessern**, Wichtig)
-- Demo-Daten: randomisierte Noten, Stimmung, Habits, viele Projekte (Passion, Mini, LZK, Bewerbung, Schnupperlehre, Gruppenarbeit, Reflexion, Todo)
+- Demo-Daten: randomisierte Noten, Stimmung, Habits, viele Projekte
 - Speicherung: localStorage (AppData)
+- **Mobile Navigation**: Bottom-Nav für Smartphones/Tablets mit Safe Area
+- **Lehrer-PIN**: Einfacher PIN-Schutz (Standard: 1234) für den Lehrer-Bereich
+- **Responsive Tiles**: Logbuch-Kacheln passen sich an Bildschirmgrösse an (1-2 Spalten mobil)
+- **Professionelle Dialoge**: Alle `alert()`/`confirm()` durch Modals/Toasts ersetzt
+- **Korrekte Fortschrittsanzeige**: Projekt-Fortschritt basiert auf echten Meilenstein-Daten
+- **Type-Safety**: KanbanColumn mit korrektem Interface statt `any`
+- **Labels erweitert**: Bestätigungsdialoge, allgemeine Begriffe in `labels.ts`
 
 ---
 
 ## Nächste Schritte (Priorität)
 
-### 1. Kurzfristig (UX & Feinschliff)
-- [ ] **Placeholder im Lehrer-Cockpit**: "Deine Nachricht an Luca..." dynamisch mit aktuellem Schülernamen ersetzen
-- [ ] **Link teilen (Showcase)**: Statt `alert("Link kopiert!")` echten Copy-to-Clipboard + kurze Erfolgsmeldung (Toast/Snackbar)
-- [ ] **Toolbox (Werkstatt)**: Statt `alert('Demo: Öffnen/Download...')` entweder echten Download-Link oder dezente Hinweis-Box
+### 1. Kurzfristig (für Unterrichtseinsatz)
+- [x] **Link teilen (Showcase)**: Copy-to-Clipboard + Toast statt alert ✅
+- [x] **Toolbox (Werkstatt)**: Dezente Hinweis-Box statt alert ✅
+- [x] **Placeholder im Lehrer-Cockpit**: Dynamischer Schülername ✅
+- [ ] **Offline-Stabilität**: PWA-Caching für zuverlässigen Einsatz im Schulnetz testen
+- [ ] **Stundenplan vereinfachen**: Einfacheres Eingabeformat für Lehrpersonen
 
 ### 2. Mittelfristig (Funktionen)
-- [ ] **PDF-Export vertiefen**: Export-Modal mit echten Optionen (Cover, Profil, Kompetenzen, Projekte) – ggf. mit Library (z. B. jsPDF / html2pdf) oder Server-Route
-- [ ] **Kompetenzrad persistieren**: Kompetenz-Level aus `CompetencyWheel` in `StudentRecord` speichern (aktuell nur in Komponenten-State)
-- [ ] **Ziele im Compass**: Anzeige der Goals + Toggle/Neu (falls noch nicht vollständig sichtbar)
-
-### 3. Optional (Backend & Skalierung)
 - [ ] **Backend/API**: Daten in DB (z. B. Supabase, Firebase) statt nur localStorage für Multi-Device & Lehrer-Zugriff
-- [ ] **Auth**: Login für Schüler vs. Lehrperson (optional Rollen)
+- [ ] **Auth**: Echtes Login für Schüler vs. Lehrperson (ersetzt aktuellen PIN)
+- [ ] **Ziele im Compass**: Anzeige der Goals + Toggle/Neu erweitern
 
-### 4. Qualität & Deployment
-- [ ] **Responsive/Barrierefreiheit**: Fokus-States, Keyboard-Navigation, ARIA-Labels prüfen
-- [ ] **Lighthouse/Performance**: Ladezeiten, Bilder optimieren
+### 3. Qualität & Deployment
+- [x] **Responsive/Barrierefreiheit**: Mobile Navigation, Safe Area, Touch-Targets ✅
+- [ ] **Lighthouse/Performance**: Ladezeiten, Bilder optimieren (externe Bilder ablösen)
 - [ ] **Deployment**: z. B. Vercel/Netlify mit `npm run build` + Preview-URL dokumentieren
-
----
-
-## Empfehlung für „Jetzt weitermachen“
-1. **Placeholder + Link kopieren** (schnell, sichtbarer Gewinn)
-2. **Kompetenzrad persistieren** (wichtig für echten Mehrwert)
-3. **PDF-Export** schärfen oder klar als „Demo“ kennzeichnen
-
-Wenn du sagst, welchen Schritt du als Nächstes angehen willst, können wir ihn konkret im Code umsetzen.
+- [ ] **Externe Abhängigkeiten**: Basel-Logo und Projektbilder lokal einbetten statt von Wikipedia/Picsum

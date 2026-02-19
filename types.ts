@@ -27,13 +27,17 @@ export interface Goal {
   completed: boolean;
 }
 
+export type ProjectPhase = 'Planen' | 'Recherche' | 'Umsetzung' | 'Abschluss';
+
+export const PROJECT_PHASES: ProjectPhase[] = ['Planen', 'Recherche', 'Umsetzung', 'Abschluss'];
+
 export interface DiaryEntry {
   id: string;
   date: string;
   content: string;
   image?: string;
-  phase: 'Recherche' | 'Prototyping' | 'Umsetzung' | 'Abschluss';
-  teacherFeedback?: string; // New: Feedback field
+  phase: ProjectPhase;
+  teacherFeedback?: string;
 }
 
 export type ProjectType = 
@@ -54,14 +58,23 @@ export interface ProjectResource {
   url?: string; // bei note optional
 }
 
+export interface Milestone {
+  id: string;
+  week: number;
+  text: string;
+  completed: boolean;
+  phase?: ProjectPhase;
+}
+
 export interface Project {
   id: string;
   title: string;
   type: ProjectType; 
   status: 'planning' | 'active' | 'completed';
+  currentPhase: ProjectPhase;
   passionQuestion: string; 
   subjects: string[];
-  milestones: { week: number; text: string; completed: boolean }[];
+  milestones: Milestone[];
   resources: ProjectResource[];
   entries: DiaryEntry[];
   lastUpdated: string;

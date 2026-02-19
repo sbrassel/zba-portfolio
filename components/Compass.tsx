@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Target, TrendingUp, Plus, Edit2, Save, ArrowUpRight, Layout, Archive, X, User, Briefcase, PenLine, Check, History, ArrowLeft, ChevronDown, Trophy, Bell, Star, GraduationCap, Flame, AlertCircle, Activity, Trash2, Calendar, FileText, Settings2, Maximize2, Minimize2, Smile, Send, FolderOpen, Award, Lock, Sparkles, Zap, Download, Upload } from 'lucide-react';
-import { Skill, Goal, StudentProfile, Grade, Sector, ReflectionEntry, Notification, Project, LogbuchTile, LogbuchTileType, LogbuchTileSize, ApplicationLog, DossierDocument, Achievement, AchievementCategory, CompetencyData } from '../types';
+import { Skill, Goal, StudentProfile, Grade, Sector, ReflectionEntry, Notification, Project, ProjectPhase, LogbuchTile, LogbuchTileType, LogbuchTileSize, ApplicationLog, DossierDocument, Achievement, AchievementCategory, CompetencyData } from '../types';
 import { CompetencyWheel } from './CompetencyWheel';
 import { COMPETENCY_DATA, PROJECT_IMAGE_BY_TYPE } from '../constants';
 import { NotificationsPanel } from './NotificationsPanel';
@@ -20,7 +20,11 @@ const TILE_LABELS: Record<LogbuchTileType, string> = {
   documents: LABELS.tiles.documents,
 };
 
-const SIZE_TO_SPAN: Record<LogbuchTileSize, number> = { small: 4, medium: 6, large: 12 };
+const SIZE_TO_SPAN: Record<LogbuchTileSize, string> = {
+  small: 'col-span-12 sm:col-span-6 md:col-span-4',
+  medium: 'col-span-12 sm:col-span-6',
+  large: 'col-span-12',
+};
 
 function getDefaultTiles(): LogbuchTile[] {
   return [
@@ -297,7 +301,7 @@ const GradesBracket: React.FC<{
                         <div className="flex items-center gap-1.5 shrink-0">
                           <div className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold font-['Space_Grotesk'] text-xs shadow-sm ${g.value >= 5 ? 'bg-green-500 text-white' : g.value >= 4 ? 'bg-indigo-600 text-white' : 'bg-red-500 text-white'}`}>{g.value.toFixed(1)}</div>
                           {onUpdateGrade && <button onClick={() => startEdit(idx, g)} className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600" aria-label="Note bearbeiten"><Edit2 size={10} /></button>}
-                          {onDeleteGrade && <button onClick={() => { if (confirm('Note löschen?')) onDeleteGrade(idx); }} className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600" aria-label="Note löschen"><Trash2 size={10} /></button>}
+                          {onDeleteGrade && <button onClick={() => onDeleteGrade(idx)} className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600" aria-label="Note löschen"><Trash2 size={10} /></button>}
                         </div>
                     </div>
                 ))}
@@ -381,8 +385,8 @@ export const Compass: React.FC<CompassProps> = ({
 
   const xpPercent = (profile.xp / profile.nextLevelXp) * 100;
   const unreadCount = notifications.filter(n => !n.read).length;
-  const activeProject = projects.find(p => p.status === 'active') || projects[0] || null;
   const mainProject = (mainProjectId && projects.find(p => p.id === mainProjectId)) || null;
+  const activeProject = mainProject || projects.find(p => p.status === 'active') || projects[0] || null;
 
   return (
     <div className="animate-fade-in pb-8 space-y-6 max-w-[1400px] mx-auto">
@@ -427,12 +431,13 @@ export const Compass: React.FC<CompassProps> = ({
       {/* DYNAMIC TILE GRID */}
       <div className="grid grid-cols-12 gap-4 auto-rows-[minmax(280px,auto)]">
         {tiles.map((tile) => {
-          const span = SIZE_TO_SPAN[tile.size];
+          const spanClass = SIZE_TO_SPAN[tile.size];
           return (
-            <div key={tile.id} className="min-h-[280px] flex flex-col" style={{ gridColumn: `span ${Math.min(span, 12)}` }}>
+            <div key={tile.id} className={`min-h-[280px] flex flex-col ${spanClass}`}>
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full min-h-[280px] overflow-hidden relative group/tile">
                 {tile.type === 'project' && (() => {
                   const imgUrl = activeProject ? PROJECT_IMAGE_BY_TYPE[activeProject.type] : PROJECT_IMAGE_BY_TYPE.passion;
+                  const phaseColorMap: Record<ProjectPhase, string> = { Planen: 'bg-amber-500', Recherche: 'bg-blue-500', Umsetzung: 'bg-emerald-500', Abschluss: 'bg-violet-500' };
                   return (
                   <>
                     <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-1000 grayscale-[30%]" style={{ backgroundImage: `url(${imgUrl})` }} />
@@ -440,9 +445,22 @@ export const Compass: React.FC<CompassProps> = ({
                     <div className="absolute top-4 right-4"><button onClick={() => onNavigate(Sector.WORKSHOP)} className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all border border-white/20"><ArrowUpRight size={18} /></button></div>
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       {activeProject ? (
-                        <><span className="bg-blue-600 text-white text-[8px] font-bold px-2 py-1 uppercase rounded tracking-widest shadow-lg">{LABELS.projectStatus.projectActive}</span>
+                        (() => {
+                          const total = activeProject.milestones.length;
+                          const done = activeProject.milestones.filter(m => m.completed).length;
+                          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                          const phaseBg = phaseColorMap[activeProject.currentPhase] || 'bg-blue-500';
+                          return (
+                        <>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="bg-blue-600 text-white text-[8px] font-bold px-2 py-1 uppercase rounded tracking-widest shadow-lg">{mainProject && activeProject.id === mainProject.id ? LABELS.project.mainProject : LABELS.projectStatus.projectActive}</span>
+                          <span className={`${phaseBg} text-white text-[8px] font-bold px-2 py-1 rounded tracking-widest shadow-lg`}>{(LABELS.phases as Record<string, string>)[activeProject.currentPhase]}</span>
+                        </div>
                         <h2 className="text-xl font-bold text-white font-['Space_Grotesk'] leading-tight">{activeProject.title}</h2>
-                        <div className="max-w-[200px] bg-white/10 backdrop-blur-lg rounded-xl p-3 border border-white/10"><div className="flex justify-between text-[8px] font-bold text-slate-200 uppercase mb-1.5 tracking-widest"><span>{LABELS.projectStatus.status}</span><span>60%</span></div><div className="h-1 bg-white/20 rounded-full overflow-hidden"><div className="h-full bg-blue-500 w-[60%]" /></div></div></>
+                        <div className="max-w-[200px] bg-white/10 backdrop-blur-lg rounded-xl p-3 border border-white/10 mt-2"><div className="flex justify-between text-[8px] font-bold text-slate-200 uppercase mb-1.5 tracking-widest"><span>{LABELS.projectStatus.status}</span><span>{pct}%</span></div><div className="h-1 bg-white/20 rounded-full overflow-hidden"><div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${pct}%` }} /></div><div className="text-[8px] text-slate-300 mt-1.5">{done}/{total} {LABELS.general.steps}</div></div>
+                        </>
+                          );
+                        })()
                       ) : (
                         <><span className="bg-slate-600 text-white text-[8px] font-bold px-2 py-1 uppercase rounded tracking-widest shadow-lg">{LABELS.projectStatus.noProject}</span><h2 className="text-xl font-bold text-white font-['Space_Grotesk'] leading-tight">{LABELS.project.createFirst}</h2><p className="text-sm text-slate-200">{LABELS.projectStatus.goToWorkshop}</p></>
                       )}
@@ -576,7 +594,7 @@ export const Compass: React.FC<CompassProps> = ({
               <button onClick={() => setIsLayoutModalOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white text-slate-400" aria-label="Schliessen"><X size={18} /></button>
             </div>
             <div className="p-6 overflow-y-auto flex-1 space-y-4">
-              <p className="text-xs text-slate-500">Kacheln anpassen: entfernen, Grösse ändern (Klein / Mittel / Gross) oder neue Kacheln hinzufügen.</p>
+              <p className="text-xs text-slate-500">Kacheln anpassen: entfernen, Grösse ändern (S = klein, M = halbe Breite, L = ganze Breite) oder neue Kacheln hinzufügen.</p>
               <div className="space-y-3">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aktuelle Kacheln</h4>
                 {tiles.map((t, idx) => (

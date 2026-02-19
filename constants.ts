@@ -1,5 +1,5 @@
 
-import { Skill, StudentProfile, Project, ProjectResource, Goal, CompetencyData, Grade, ApplicationLog, Notification, Resource, DossierDocument, ReflectionEntry, Achievement } from './types';
+import { Skill, StudentProfile, Project, ProjectResource, Goal, CompetencyData, Grade, ApplicationLog, Notification, Resource, DossierDocument, ReflectionEntry, Achievement, Milestone } from './types';
 import type { ProjectType } from './types';
 
 /** Feste Unterrichtszeiten (Stundenplan-Slots) */
@@ -56,12 +56,13 @@ export const INITIAL_PROJECTS: Project[] = [
     title: 'Budget 1. Wohnung',
     type: 'passion',
     status: 'active',
+    currentPhase: 'Umsetzung',
     passionQuestion: 'Wie viel kostet das Leben wirklich, damit ich nicht in Schulden gerate?',
     subjects: ['Mathe', 'ABU'],
     milestones: [
-      { week: 1, text: 'Wohnungsanzeigen analysieren', completed: true },
-      { week: 2, text: 'Tabelle erstellen', completed: true },
-      { week: 3, text: 'Reflexion schreiben', completed: false },
+      { id: 'm1_1', week: 1, text: 'Wohnungsanzeigen analysieren', completed: true, phase: 'Recherche' },
+      { id: 'm1_2', week: 2, text: 'Tabelle erstellen', completed: true, phase: 'Umsetzung' },
+      { id: 'm1_3', week: 3, text: 'Reflexion schreiben', completed: false, phase: 'Abschluss' },
     ],
     resources: [{ id: 'p1_res1', title: 'Excel, Comparis', type: 'note' }] as ProjectResource[],
     lastUpdated: '2023-10-15',
@@ -74,11 +75,12 @@ export const INITIAL_PROJECTS: Project[] = [
     title: 'Mini-Lektion: Origami',
     type: 'mini',
     status: 'planning',
+    currentPhase: 'Planen',
     passionQuestion: 'Wie bringe ich meiner Klasse in 15 Minuten bei, einen Kranich zu falten?',
     subjects: ['Deutsch', 'Gestalten'],
     milestones: [
-      { week: 5, text: 'Anleitung zeichnen', completed: false },
-      { week: 6, text: 'Test-Lektion mit Coach', completed: false }
+      { id: 'm2_1', week: 5, text: 'Anleitung zeichnen', completed: false, phase: 'Umsetzung' },
+      { id: 'm2_2', week: 6, text: 'Test-Lektion mit Coach', completed: false, phase: 'Abschluss' }
     ],
     resources: [{ id: 'p2_res1', title: 'Papier, YouTube Tutorials', type: 'note' }] as ProjectResource[],
     lastUpdated: '2023-11-01',
@@ -89,11 +91,12 @@ export const INITIAL_PROJECTS: Project[] = [
     title: 'Schnuppern Mediamatik',
     type: 'trial',
     status: 'completed',
+    currentPhase: 'Abschluss',
     passionQuestion: 'Passt der Beruf Mediamatiker wirklich zu meinem Alltag?',
     subjects: ['BO'],
     milestones: [
-      { week: 2, text: 'Lehrstelle finden', completed: true },
-      { week: 4, text: 'Schnupperbericht', completed: true }
+      { id: 'm3_1', week: 2, text: 'Lehrstelle finden', completed: true, phase: 'Recherche' },
+      { id: 'm3_2', week: 4, text: 'Schnupperbericht', completed: true, phase: 'Abschluss' }
     ],
     resources: [{ id: 'p3_res1', title: 'Notizblock, Kamera', type: 'note' }] as ProjectResource[],
     lastUpdated: '2023-09-20',
@@ -106,11 +109,12 @@ export const INITIAL_PROJECTS: Project[] = [
     title: 'Bewerbung Roche',
     type: 'application',
     status: 'active',
+    currentPhase: 'Umsetzung',
     passionQuestion: 'Kann ich meine Stärken im Motivationsschreiben überzeugend darstellen?',
     subjects: ['Deutsch'],
     milestones: [
-      { week: 8, text: 'CV Update', completed: true },
-      { week: 9, text: 'Absenden', completed: false }
+      { id: 'm4_1', week: 8, text: 'CV Update', completed: true, phase: 'Umsetzung' },
+      { id: 'm4_2', week: 9, text: 'Absenden', completed: false, phase: 'Abschluss' }
     ],
     resources: [{ id: 'p4_res1', title: 'Portfolio, Zeugnisse', type: 'note' }] as ProjectResource[],
     lastUpdated: '2023-11-10',
