@@ -30,11 +30,11 @@ function getDefaultTiles(): LogbuchTile[] {
   return [
     { id: `t_${Date.now()}_1`, type: 'project', size: 'large', order: 0 },
     { id: `t_${Date.now()}_2`, type: 'competency', size: 'medium', order: 1 },
-    { id: `t_${Date.now()}_3`, type: 'mood', size: 'small', order: 2 },
+    { id: `t_${Date.now()}_3`, type: 'mood', size: 'medium', order: 2 },
     { id: `t_${Date.now()}_4`, type: 'profile', size: 'medium', order: 3 },
     { id: `t_${Date.now()}_5`, type: 'focus', size: 'medium', order: 4 },
-    { id: `t_${Date.now()}_6`, type: 'grades', size: 'small', order: 5 },
-    { id: `t_${Date.now()}_7`, type: 'achievements', size: 'large', order: 6 },
+    { id: `t_${Date.now()}_6`, type: 'grades', size: 'medium', order: 5 },
+    { id: `t_${Date.now()}_7`, type: 'achievements', size: 'medium', order: 6 },
   ];
 }
 

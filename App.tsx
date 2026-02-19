@@ -607,11 +607,11 @@ function createDemoStudents(): StudentRecord[] {
     const defaultTiles: LogbuchTile[] = [
       { id: mkId('t'), type: 'project', size: 'large', order: 0 },
       { id: mkId('t'), type: 'competency', size: 'medium', order: 1 },
-      { id: mkId('t'), type: 'mood', size: 'small', order: 2 },
+      { id: mkId('t'), type: 'mood', size: 'medium', order: 2 },
       { id: mkId('t'), type: 'profile', size: 'medium', order: 3 },
       { id: mkId('t'), type: 'focus', size: 'medium', order: 4 },
-      { id: mkId('t'), type: 'grades', size: 'small', order: 5 },
-      { id: mkId('t'), type: 'achievements', size: 'large', order: 6 },
+      { id: mkId('t'), type: 'grades', size: 'medium', order: 5 },
+      { id: mkId('t'), type: 'achievements', size: 'medium', order: 6 },
     ];
 
     return {
